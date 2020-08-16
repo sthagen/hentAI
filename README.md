@@ -6,13 +6,13 @@ This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), 
 
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on old model 161. 
 
-Development news will be posted on my Twitter (NSFW).
+Twitter (NSFW).
 [![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/nate_of_hent_ai)
 
-Like what you see? You can send me a tip! (Proceeds also go to my tuition)
+Like what you see? Help fund this project:
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
 
-You can join development discussion on the Discord channel: https://discord.gg/j4dPZ7W 
+You can join development and news discussion on the Discord channel: https://discord.gg/j4dPZ7W 
 
 Example of bar detection on model 226:
 ![Detection Sample](assets/dido_test1_o.jpg)
@@ -23,7 +23,7 @@ Examples of mosaic detection on model 236:
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
 # Getting Started
-You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.8.0, tensorflow-gpu 1.9.0, torch 0.4.1, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line. 
+You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.8.0, tensorflow-gpu 1.9.0, torch 0.4.1, and keras 2.2.0. I have not fully tested the stability of newer combinations. I use Anaconda3 for my command line. 
 
 Only windows is supported for the executable. You can pull this code for linux.
 
@@ -40,15 +40,17 @@ Only windows is supported for the executable. You can pull this code for linux.
 * [inspect_h_data.ipynb](samples/hentai/inspect_h_data.ipynb)
 Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
 
-* [test_data_generator.py](test_data_generator.py) Script that automates bar censoring and annotation, more explained below. This is meant to be placed in a separate folder, and expects uncensored images in a folder called "decensored_input" and outputs the barred image into "decensored_input_original", and populates a csv with the annotations. You do not need to use this script, unless you want to help in expanding the dataset. In which case, join the discord and contact me.
+* [test_combined_generator.py](test_combined_generator.py) Script that automates bar censoring and annotation, more explained below. This is meant to be placed in a separate folder, and expects uncensored images in a folder called "decensored_input" and outputs the barred image into "decensored_input_original", and populates a csv with the annotations. You do not need to use this script, unless you want to help in expanding the dataset. In which case, join the discord and contact me.
 
 * [hent_AI_COLAB_1.ipynb](hent_AI_COLAB_1.ipynb) Google Colab notebook with instructions for ESRGAN video decensoring. This will use Google's GPUs on the cloud for free, and should be faster than most, if not all consumer GPUs. But, sessions will get deleted after 30 minutes of idle or 12 hours. I reccommend this option for any sort of video decensoring, it is visually good enough and really fast.
 
 * [green_mask_project_mosaic_resolution.py](green_mask_project_mosaic_resolution.py) Script from GMP that estimates a mosaic's granularity (size of the mosaic boxes) for use in ESRGAN decensoring.
 
+* [hconfig.ini](hconfig.ini) Configuration file that holds directory information.
+
 # The Dataset
 
-Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I have decided to not provide my dataset. Annotated with VGG annotator in .json format.
+The dataset has a mix of some hand-done annotations, and mostly hand-done annotated images using our test_combined_generator. This script takes uncensored images as input, and can create a clone of the image with a mosaic and random bar censors, using NudeNet. This dataset is not provided here. You can contact me on Discord if you are interested.
 
 Dataset annotations have were made with the polygon shape. Bar and Mosaic region attributes are formated as:
 
@@ -56,12 +58,11 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
-Currently, the model needs a bigger database, namely with bar censors. Please contact me (Discord or Twitter) so I can provide the current dataset if you wish to train on your own. We are currently looking into dataset generation by censoring already uncensored images, as well as further image augmentation.
-[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current dataset.
+[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor.
 
 # The Model
 
-I experimented with other pre-trained models, but ended transfer learning with the imagenet model. You will want the latest model for better accuracy.
+You will want the latest model for better accuracy.
 
 * Model 161 (deprecated) 
 
@@ -73,13 +74,19 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
-ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo. Place this model in the main directory. 
+ESRGAN (on the code only) is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo. Place this model in the main directory. 
 
 ## Requirements
 
 You will need to download and install DeepCreamPy, which is linked in the intro.
 
-The executable itself should not have any requirements on Windows. For linux, clone the repo and follow the provided instructions for getting its requirements.
+The executable will need [ffmpeg](https://ffmpeg.org/) if you want sound to carry over on videos. Place ffmpeg.exe in the main directory, or somewhere defined in your PATH or in an environment variable. For linux, clone the repo and follow the provided instructions for getting its requirements. To get ffmpeg on linux or colab, use:
+
+```
+!sudo add-apt-repository ppa:jon-severinsson/ffmpeg
+!sudo apt-get update
+!sudo apt-get install ffmpeg
+```
 
 (Source code on Windows) I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5.2, TensorFlow 1.8, Keras 2.2, tensorflow-gpu 1.9.0, torch 0.4.1 and other common packages listed in `requirements.txt`.
@@ -94,6 +101,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 ![Screentone removal example](assets/screentoneexsfw.jpg)
 
 * For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder. 
+
+* Nvidia GPU owners should install CUDA 9.0, and cuDNN 7.6.4. Note that there are issues with RTX cards and ESRGAN, so if you want to use that I again reccomend the colab notebook instead. 
 
 ## Important Notes (READ BEFORE USING)
 
@@ -111,6 +120,7 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the short clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
+* The compiled exe release does not support ESRGAN. If you want to use this, refer to the colab notebook.
 
 ## Versions and Downloads
 
@@ -131,6 +141,16 @@ Here is an example of a screentoned image, and what it looks like when removed b
 * [1.6.3](): Added ESRGAN for video decensoring, DCP not required for this. Further support for non-unicode filenames.
 
 * [1.6.5](): Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
+
+* [1.6.7](https://github.com/natethegreate/hent-AI/releases/tag/v1.6.7): Changed ESRGAN processs to run in 2 phases: ESRGAN resize, then mask detection. Slower but more memory forgiving. Added mask blurring for less seams on ESRGAN. For non-ESRGAN, added custom dilation to expand masks. Removed option for jpg, it will be used automatically. Improved file cleaning. 
+
+* [1.6.8](https://github.com/natethegreate/hent-AI/releases/tag/v1.6.8): Videos will now take audio from the source video, using ffmpeg. Variable video bitrate is not yet available, so filesizes may not match the source. ESRGAN will now save videos to the same directory as the source video, mostly to help with the Colab.
+
+* [1.6.9](https://github.com/natethegreate/hent-AI/releases/tag/v1.6.9): Minor UI tweaks. There is now a hconfig.ini that will save your previous used directories and settings on startup. During detection process for images and video, total image/frame count will be displayed.
+
+* [1.6.9b](): Hotfix for ESRGAN and ESRGAN video. Fixed bug with the .ini. Note: .exe is unaffected, so no need for another version.
+
+* [1.6.9c](): Hotfix for image and mosaic decensoring for colab. Note: .exe is unaffected, so no need for another version.
 
 
 ## Installation directions
